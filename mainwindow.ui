@@ -6,71 +6,80 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>620</width>
-    <height>587</height>
+    <width>474</width>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>FlowFree</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>0</y>
-      <width>611</width>
-      <height>71</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="PastButton">
-       <property name="text">
-        <string>&lt;&lt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="RestartButton">
-       <property name="text">
-        <string>Restart</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="NextButton">
-       <property name="text">
-        <string>&gt;&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="AutoSolveButton">
-       <property name="text">
-        <string>AutoSolve</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
-   <widget class="GameBody" name="gamebody" native="true">
-    <property name="geometry">
-     <rect>
-      <x>100</x>
-      <y>80</y>
-      <width>450</width>
-      <height>450</height>
-     </rect>
-    </property>
-   </widget>
+   <layout class="QFormLayout" name="formLayout">
+    <item row="2" column="0">
+     <widget class="GameBody" name="gamebody" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>420</width>
+        <height>420</height>
+       </size>
+      </property>
+      <property name="baseSize">
+       <size>
+        <width>420</width>
+        <height>420</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="0" colspan="2">
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <item>
+       <widget class="QPushButton" name="PastButton">
+        <property name="text">
+         <string>&lt;&lt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="RestartButton">
+        <property name="text">
+         <string>Restart</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="NextButton">
+        <property name="text">
+         <string>&gt;&gt;</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="AutoSolveButton">
+        <property name="text">
+         <string>AutoSolve</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>620</width>
+     <width>474</width>
      <height>21</height>
     </rect>
    </property>

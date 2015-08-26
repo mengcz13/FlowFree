@@ -7,6 +7,13 @@ struct Unit{
     int color;
     int if_fixed;
     Unit* succ;
+    void clear_succ(){
+        if (!this->if_fixed)
+            color = -1;
+        if (this->succ!=0)
+            this->succ->clear_succ();
+        this->succ = 0;
+    }
 };
 
 class GameSection{
@@ -24,6 +31,8 @@ public:
 protected:
     bool find_route_for_ncolor(int colortype, Unit* start);
     bool if_unit_uncolored(int x, int y);
+    bool if_color_connected(int colorx);
+    bool if_all_color_connected();
 };
 
 #endif // GAMESECTION

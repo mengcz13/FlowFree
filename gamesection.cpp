@@ -103,3 +103,27 @@ bool GameSection :: if_unit_uncolored(int x, int y){
     else
         return false;
 }
+
+bool GameSection :: if_color_connected(int colorx){
+    Unit *p = fixed_point_series[colorx][0];
+    while (p->succ!=0)
+        p = p->succ;
+    if (p == fixed_point_series[colorx][1])
+        return true;
+    else{
+        p = fixed_point_series[colorx][1];
+        while (p->succ!=0)
+            p = p->succ;
+        if (p == fixed_point_series[colorx][0])
+            return true;
+        else
+            return false;
+    }
+}
+
+bool GameSection :: if_all_color_connected(){
+    for (int i=0;i<colortype;++i)
+        if (!if_color_connected(i))
+            return false;
+    return true;
+}

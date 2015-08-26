@@ -1,11 +1,14 @@
 #include "gamebody.h"
 #include <QDebug>
 #include <QPainter>
+#include <QMouseEvent>
+#include <cmath>
 
 GameBody :: GameBody(QWidget *parent):
     QWidget(parent)
 {
     set_value(6,QDir::current());
+    setMouseTracking(false);
 }
 
 GameBody :: ~GameBody(){
@@ -29,7 +32,7 @@ void GameBody :: past_sec(){
 }
 
 void GameBody :: restart_sec(){
-    gamesection->init();
+    load_section(current_sec);
     update();
 }
 
@@ -76,6 +79,8 @@ void GameBody :: load_section(int sec){
         delete []cps[i];
     delete []cps;
     update();
+    last_active_unit = 0;
+    show_cursor = false;
 }
 
 void GameBody :: set_value(int max, QDir source){
@@ -83,6 +88,7 @@ void GameBody :: set_value(int max, QDir source){
     current_sec = 0;
     sec_source = source;
     gamesection = 0;
+    last_active_unit = 0;
     load_section(current_sec);
 }
 
@@ -122,4 +128,151 @@ void GameBody :: paintEvent(QPaintEvent *ev){
                 startpoint = startpoint->succ;
             }
         }
+
+    //Draw the cursor
+    if (show_cursor && last_active_unit!=0){
+//        QPen pen;
+//        pen.setWidth(0);
+//        pen.setColor(QColor::fromHsv(last_active_unit->color*359/gamesection->colortype,255,255,80));
+//        p.setPen(pen);
+        QPainter p2(this);
+        p2.setRenderHint(QPainter::Antialiasing,true);
+        p2.setBrush(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,160));
+        p2.setPen(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,160));
+        p2.drawEllipse(cursor,inteval/4,inteval/4);
+    }
+}
+
+void GameBody :: mouseMoveEvent(QMouseEvent *event){
+    cursor = event->pos();
+    if (last_active_unit!=0)
+        show_cursor = true;
+    else
+        show_cursor = false;
+    update();
+    if ((last_active_unit!=0)&& event->buttons() == Qt::LeftButton){
+        int inteval = 420/(gamesection->size);
+        int cursor_j = (event->pos().x())/inteval;
+        int cursor_i = (event->pos().y())/inteval;
+        if (cursor_j>=gamesection->size)
+            cursor_j = gamesection->size - 1;
+        if (cursor_i>=gamesection->size)
+            cursor_i = gamesection->size - 1;
+        if ((abs(cursor_i-last_active_unit->x)+abs(cursor_j-last_active_unit->y))==1)
+        {
+        if (gamesection->playarea[cursor_i][cursor_j].color == -1){
+            last_active_unit->succ = &(gamesection->playarea[cursor_i][cursor_j]);
+            last_active_unit->succ->color = last_active_unit->color;
+            last_active_unit = last_active_unit->succ;
+            //update();
+        }
+        else if (gamesection->playarea[cursor_i][cursor_j].if_fixed){
+            if (gamesection->playarea[cursor_i][cursor_j].color == last_active_unit->color){
+                if (&(gamesection->playarea[cursor_i][cursor_j]) == last_active_unit){
+
+                }
+                else if (gamesection->playarea[cursor_i][cursor_j].succ == 0){
+                    last_active_unit->succ = &(gamesection->playarea[cursor_i][cursor_j]);
+                    qDebug()<<"Connected!";
+                    last_active_unit = 0;
+                    //update();
+                }
+                else {
+                    last_active_unit = &(gamesection->playarea[cursor_i][cursor_j]);
+                    gamesection->playarea[cursor_i][cursor_j].clear_succ();
+                    //update();
+                }
+            }
+            else{
+                //last_active_unit = 0;
+            }
+
+        }
+        else {
+            if (&(gamesection->playarea[cursor_i][cursor_j]) == last_active_unit){
+
+            }
+            else{
+                int tempcolor = gamesection->playarea[cursor_i][cursor_j].color;
+                if (gamesection->if_color_connected(tempcolor))
+                    qDebug()<<"Broken!";
+                Unit* p = gamesection->fixed_point_series[tempcolor][0];
+                while (p->succ!=0 && p->succ!=&(gamesection->playarea[cursor_i][cursor_j]))
+                    p = p->succ;
+                if (p->succ!=&(gamesection->playarea[cursor_i][cursor_j])){
+                    p = gamesection->fixed_point_series[tempcolor][1];
+                    while (p->succ!=0 && p->succ!=&(gamesection->playarea[cursor_i][cursor_j]))
+                        p = p->succ;
+                }
+                p->succ = 0;
+                if (last_active_unit->color != tempcolor){
+                    gamesection->playarea[cursor_i][cursor_j].clear_succ();
+                    gamesection->playarea[cursor_i][cursor_j].color = last_active_unit->color;
+                    last_active_unit->succ = &(gamesection->playarea[cursor_i][cursor_j]);
+                    last_active_unit = last_active_unit->succ;
+                }
+                else{
+                    gamesection->playarea[cursor_i][cursor_j].clear_succ();
+                    p->succ = &(gamesection->playarea[cursor_i][cursor_j]);
+                    p->succ->color = tempcolor;
+                    last_active_unit = p->succ;
+                }
+                //update();
+            }
+        }
+        }
+    }
+    else{
+        QWidget::mouseMoveEvent(event);
+    }
+}
+
+void GameBody :: mousePressEvent(QMouseEvent *event){
+    cursor = event->pos();
+    if (last_active_unit!=0)
+        show_cursor = true;
+    else
+        show_cursor = false;
+    update();
+    int inteval = 420/(gamesection->size);
+    if (event->button() == Qt::LeftButton){
+        int cursor_j = (event->pos().x())/inteval;
+        int cursor_i = (event->pos().y())/inteval;
+        if (cursor_j>=gamesection->size)
+            cursor_j = gamesection->size - 1;
+        if (cursor_i>=gamesection->size)
+            cursor_i = gamesection->size - 1;
+        if (gamesection->playarea[cursor_i][cursor_j].color == (-1)){
+            last_active_unit = 0;
+        }
+        else{
+            if (gamesection->if_color_connected(gamesection->playarea[cursor_i][cursor_j].color))
+                qDebug()<<"Broken!";
+            last_active_unit = &(gamesection->playarea[cursor_i][cursor_j]);
+            if (last_active_unit->if_fixed){
+                gamesection->fixed_point_series[last_active_unit->color][0]->clear_succ();
+                gamesection->fixed_point_series[last_active_unit->color][1]->clear_succ();
+                //update();
+
+            }
+            else{
+                int tempcolor = last_active_unit->color;
+                last_active_unit->clear_succ();
+                last_active_unit->color = tempcolor;
+                //update();
+            }
+        }
+    }
+    else{
+        last_active_unit = 0;
+    }
+
+}
+
+void GameBody :: mouseReleaseEvent(QMouseEvent *event){
+    last_active_unit = 0;
+    show_cursor =false;
+    update();
+    if (gamesection->if_all_color_connected())
+        qDebug()<<"PASS!";
 }
