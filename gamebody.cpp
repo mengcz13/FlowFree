@@ -2,7 +2,10 @@
 #include <QDebug>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QMessageBox>
 #include <cmath>
+#include <cstdlib>
+#include <ctime>
 
 GameBody :: GameBody(QWidget *parent):
     QWidget(parent)
@@ -34,7 +37,9 @@ void GameBody :: past_sec(){
 }
 
 void GameBody :: restart_sec(){
-    load_section(current_sec);
+    gamesection->init();
+    last_active_unit = 0;
+    show_cursor = false;
     update();
 }
 
@@ -42,9 +47,18 @@ void GameBody :: autosolve_sec(){
     bool solved = gamesection->autosolve();
     if (solved){
         update();
+        QMessageBox success_note(QMessageBox::Information,"FlowFree",QString("The section is successfully solved within %1 steps!").arg(gamesection->steps_of_auto_solve),QMessageBox::Yes|QMessageBox::Default);
+        success_note.show();
+        if (success_note.exec() == QMessageBox::Yes){
+
+        }
     }
     else {
-        //Warning: No Solution!
+        QMessageBox failure_note(QMessageBox::Warning,"FlowFree","The section cannot be solved!",QMessageBox::Yes|QMessageBox::Default);
+        failure_note.show();
+        if (failure_note.exec() == QMessageBox::Yes){
+
+        }
     }
 }
 
@@ -56,7 +70,8 @@ void GameBody :: autosolve_sec(){
  * (point 0 of colorN)
  * (point 1 of colorN)
  */
-void GameBody :: load_section(int sec){
+void GameBody :: load_section(int sec = 0){
+    emit currentSectionChanged(sec);
     if (gamesection!=0)
         delete gamesection;
     QString filepath = QString("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\%1.txt").arg(sec);
@@ -94,9 +109,53 @@ void GameBody :: set_value(int max, QDir source){
     load_section(current_sec);
 }
 
+void GameBody :: randomize(){
+    if (random_size>0&&random_colortype>0&&random_size*random_size>=2*random_colortype)
+    {
+    gamesection->init();
+    Unit **cps = new Unit*[random_colortype];
+    for (int i=0;i<random_colortype;++i)
+        cps[i]= new Unit[2];
+    for (int i=0;i<random_colortype;++i)
+        for (int j=0;j<2;++j){
+            cps[i][j].x = 0;
+            cps[i][j].y = 0;
+            cps[i][j].color = i;
+            cps[i][j].if_fixed = true;
+            cps[i][j].succ = 0;
+        }
+    gamesection = new GameSection(cps,random_size,random_colortype);
+    for (int i=0;i<random_size;++i)
+        delete []cps[i];
+    delete []cps;
+    gamesection->playarea[0][0].if_fixed = false;
+    gamesection->playarea[0][0].color = -1;
+    srand(time(NULL));
+    do{
+    for (int i=0;i<random_colortype;++i)
+        for (int j=0;j<2;++j){
+            int tempx = 0;
+            int tempy = 0;
+            do{
+            tempx = rand()%random_size;
+            tempy = rand()%random_size;
+            }while(gamesection->playarea[tempx][tempy].if_fixed);
+            gamesection->playarea[tempx][tempy].color = i;
+            gamesection->playarea[tempx][tempy].if_fixed = true;
+            gamesection->fixed_point_series[i][j] = &(gamesection->playarea[tempx][tempy]);
+        }
+    }while(!gamesection->autosolve());
+    gamesection->init();
+    update();
+    last_active_unit = 0;
+    show_cursor = false;
+    }
+}
+
 void GameBody :: paintEvent(QPaintEvent *ev){
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing,true);
+    p.setWindow(0,0,420,420);
     //Draw the grid
     for (int i=0;i<=420;i+=420/(gamesection->size)){
         p.drawLine(0,i,420,i);
@@ -142,7 +201,7 @@ void GameBody :: paintEvent(QPaintEvent *ev){
         p2.setRenderHint(QPainter::Antialiasing,true);
         p2.setBrush(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,160));
         p2.setPen(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,0));
-        p2.drawEllipse(cursor,inteval/4,inteval/4);
+        p2.drawEllipse(cursor,(this->frameSize().height()/gamesection->size)/4,(this->frameSize().height()/gamesection->size)/4);
     }
 }
 
@@ -154,7 +213,7 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
         else
             show_cursor = false;
         update();
-        int inteval = 420/(gamesection->size);
+        int inteval = (this->frameSize().height())/(gamesection->size);
         int cursor_j = (event->pos().x())/inteval;
         int cursor_i = (event->pos().y())/inteval;
         if (cursor_j>=gamesection->size)
@@ -236,7 +295,8 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
 }
 
 void GameBody :: mousePressEvent(QMouseEvent *event){
-    int inteval = 420/(gamesection->size);
+    int inteval = (this->frameSize().height())/(gamesection->size);
+    qDebug()<<this->frameSize();
     if (event->button() == Qt::LeftButton){
         cursor = event->pos();
         if (last_active_unit!=0)
@@ -288,5 +348,10 @@ void GameBody :: mouseReleaseEvent(QMouseEvent *event){
         qDebug()<<"PASS!";
         player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\pass.mp3"));
         player->play();
+        QMessageBox pass_note(QMessageBox::Information,"FlowFree","You have passed this section!",QMessageBox::Yes|QMessageBox::Default);
+        pass_note.show();
+        if (pass_note.exec() == QMessageBox::Yes){
+
+        }
     }
 }

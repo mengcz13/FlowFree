@@ -23,6 +23,7 @@ private:
     int size;
     int colortype;
     Unit*** fixed_point_series;
+    int steps_of_auto_solve;
 public:
     GameSection(Unit**, int, int);
     ~GameSection();
