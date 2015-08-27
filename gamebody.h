@@ -7,6 +7,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QWidget>
+#include <QMediaPlayer>
 #include "gamesection.h"
 
 //Responsible for loading and drawing
@@ -20,6 +21,8 @@ private:
     Unit* last_active_unit;
     QPoint cursor;
     bool show_cursor;
+    QMediaPlayer *player;
+
 public:
     GameBody(QWidget *parent = 0);
     ~GameBody();

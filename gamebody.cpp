@@ -9,10 +9,12 @@ GameBody :: GameBody(QWidget *parent):
 {
     set_value(6,QDir::current());
     setMouseTracking(false);
+    player = new QMediaPlayer;
 }
 
 GameBody :: ~GameBody(){
     delete gamesection;
+    delete player;
 }
 
 void GameBody :: next_sec(){
@@ -110,8 +112,9 @@ void GameBody :: paintEvent(QPaintEvent *ev){
             //Pattern2
             //p.setBrush(QColor(QColor::colorNames()[i]));
             //Pattern3
+            p.setPen(QColor::fromHsv(i*359/gamesection->colortype,255,255,0));
             p.setBrush(QColor::fromHsv(i*359/gamesection->colortype,255,255));
-            p.drawEllipse(inteval*(gamesection->fixed_point_series[i][j]->y),inteval*(gamesection->fixed_point_series[i][j]->x),inteval,inteval);
+            p.drawEllipse(QPoint(inteval*(gamesection->fixed_point_series[i][j]->y)+inteval/2,inteval*(gamesection->fixed_point_series[i][j]->x)+inteval/2),inteval/3,inteval/3);
         }
 
     //Draw the tubes
@@ -138,19 +141,19 @@ void GameBody :: paintEvent(QPaintEvent *ev){
         QPainter p2(this);
         p2.setRenderHint(QPainter::Antialiasing,true);
         p2.setBrush(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,160));
-        p2.setPen(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,160));
+        p2.setPen(QColor::fromHsv((last_active_unit->color)*359/gamesection->colortype,255,255,0));
         p2.drawEllipse(cursor,inteval/4,inteval/4);
     }
 }
 
 void GameBody :: mouseMoveEvent(QMouseEvent *event){
-    cursor = event->pos();
-    if (last_active_unit!=0)
-        show_cursor = true;
-    else
-        show_cursor = false;
-    update();
     if ((last_active_unit!=0)&& event->buttons() == Qt::LeftButton){
+        cursor = event->pos();
+        if (last_active_unit!=0)
+            show_cursor = true;
+        else
+            show_cursor = false;
+        update();
         int inteval = 420/(gamesection->size);
         int cursor_j = (event->pos().x())/inteval;
         int cursor_i = (event->pos().y())/inteval;
@@ -174,6 +177,8 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
                 else if (gamesection->playarea[cursor_i][cursor_j].succ == 0){
                     last_active_unit->succ = &(gamesection->playarea[cursor_i][cursor_j]);
                     qDebug()<<"Connected!";
+                    player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\connected.mp3"));
+                    player->play();
                     last_active_unit = 0;
                     //update();
                 }
@@ -194,8 +199,11 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
             }
             else{
                 int tempcolor = gamesection->playarea[cursor_i][cursor_j].color;
-                if (gamesection->if_color_connected(tempcolor))
+                if (gamesection->if_color_connected(tempcolor)){
                     qDebug()<<"Broken!";
+                    player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\broken.mp3"));
+                    player->play();
+                }
                 Unit* p = gamesection->fixed_point_series[tempcolor][0];
                 while (p->succ!=0 && p->succ!=&(gamesection->playarea[cursor_i][cursor_j]))
                     p = p->succ;
@@ -228,14 +236,14 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
 }
 
 void GameBody :: mousePressEvent(QMouseEvent *event){
-    cursor = event->pos();
-    if (last_active_unit!=0)
-        show_cursor = true;
-    else
-        show_cursor = false;
-    update();
     int inteval = 420/(gamesection->size);
     if (event->button() == Qt::LeftButton){
+        cursor = event->pos();
+        if (last_active_unit!=0)
+            show_cursor = true;
+        else
+            show_cursor = false;
+        update();
         int cursor_j = (event->pos().x())/inteval;
         int cursor_i = (event->pos().y())/inteval;
         if (cursor_j>=gamesection->size)
@@ -246,8 +254,11 @@ void GameBody :: mousePressEvent(QMouseEvent *event){
             last_active_unit = 0;
         }
         else{
-            if (gamesection->if_color_connected(gamesection->playarea[cursor_i][cursor_j].color))
+            if (gamesection->if_color_connected(gamesection->playarea[cursor_i][cursor_j].color)){
                 qDebug()<<"Broken!";
+                player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\broken.mp3"));
+                player->play();
+            }
             last_active_unit = &(gamesection->playarea[cursor_i][cursor_j]);
             if (last_active_unit->if_fixed){
                 gamesection->fixed_point_series[last_active_unit->color][0]->clear_succ();
@@ -273,6 +284,9 @@ void GameBody :: mouseReleaseEvent(QMouseEvent *event){
     last_active_unit = 0;
     show_cursor =false;
     update();
-    if (gamesection->if_all_color_connected())
+    if (gamesection->if_all_color_connected()){
         qDebug()<<"PASS!";
+        player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\pass.mp3"));
+        player->play();
+    }
 }
