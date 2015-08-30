@@ -61,6 +61,8 @@ bool GameSection :: autosolve(){
 
 bool GameSection :: find_route_for_ncolor(int nctype, Unit* start){
     steps_of_auto_solve++;
+    if (steps_of_auto_solve > 1000000)
+        return false;
     std::queue <Unit*> dire_queue;
     int tarx = fixed_point_series[colortype - nctype][1]->x; int tary = fixed_point_series[colortype - nctype][1]->y;
         if ((start->x == tarx && start->y == tary + 1) || (start->x == tarx && start->y == tary - 1) || (start->x == tarx + 1 && start->y == tary) || (start->x == tarx - 1 && start->y == tary))

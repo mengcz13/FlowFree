@@ -17,10 +17,16 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     gamesection.cpp \
-    gamebody.cpp
+    gamebody.cpp \
+    selectsectiondialog.cpp
 
 HEADERS  += mainwindow.h \
     gamesection.h \
-    gamebody.h
+    gamebody.h \
+    selectsectiondialog.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    selectsectiondialog.ui
+
+RESOURCES += \
+    flowfree_resources.qrc

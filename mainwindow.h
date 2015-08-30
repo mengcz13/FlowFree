@@ -2,7 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "gamebody.h"
+#include "selectsectiondialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -18,7 +18,7 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    GameBody* gamebody;
+    SelectSectionDialog* selectdialog;
 };
 
 #endif // MAINWINDOW_H

@@ -12,12 +12,10 @@ GameBody :: GameBody(QWidget *parent):
 {
     set_value(6,QDir::current());
     setMouseTracking(false);
-    player = new QMediaPlayer;
 }
 
 GameBody :: ~GameBody(){
     delete gamesection;
-    delete player;
 }
 
 void GameBody :: next_sec(){
@@ -54,7 +52,7 @@ void GameBody :: autosolve_sec(){
         }
     }
     else {
-        QMessageBox failure_note(QMessageBox::Warning,"FlowFree","The section cannot be solved!",QMessageBox::Yes|QMessageBox::Default);
+        QMessageBox failure_note(QMessageBox::Warning,"FlowFree",QString("The section cannot be solved within %1 steps!").arg(gamesection->steps_of_auto_solve),QMessageBox::Yes|QMessageBox::Default);
         failure_note.show();
         if (failure_note.exec() == QMessageBox::Yes){
 
@@ -71,10 +69,11 @@ void GameBody :: autosolve_sec(){
  * (point 1 of colorN)
  */
 void GameBody :: load_section(int sec = 0){
-    emit currentSectionChanged(sec);
+    Q_INIT_RESOURCE(flowfree_resources);
+    emit currentSectionChanged(QString("SECTION %1").arg(sec+1));
     if (gamesection!=0)
         delete gamesection;
-    QString filepath = QString("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\%1.txt").arg(sec);
+    QString filepath = QString(":/sections/sections/%1.txt").arg(sec);
     QFile f(filepath);
     if (!f.open(QIODevice::ReadOnly))
         qFatal("Cannot Open!");
@@ -95,17 +94,23 @@ void GameBody :: load_section(int sec = 0){
     for (int i=0;i<sz;++i)
         delete []cps[i];
     delete []cps;
-    update();
     last_active_unit = 0;
     show_cursor = false;
+    current_sec = sec;
+    update();
 }
 
 void GameBody :: set_value(int max, QDir source){
+    gamesection = 0;
     max_sec_num = max;
     current_sec = 0;
     sec_source = source;
     gamesection = 0;
     last_active_unit = 0;
+    cursor = QPoint(0,0);
+    show_cursor = false;
+    random_size = 5;
+    random_colortype = 3;
     load_section(current_sec);
 }
 
@@ -131,7 +136,7 @@ void GameBody :: randomize(){
     gamesection->playarea[0][0].if_fixed = false;
     gamesection->playarea[0][0].color = -1;
     srand(time(NULL));
-    do{
+    //do{
     for (int i=0;i<random_colortype;++i)
         for (int j=0;j<2;++j){
             int tempx = 0;
@@ -144,7 +149,7 @@ void GameBody :: randomize(){
             gamesection->playarea[tempx][tempy].if_fixed = true;
             gamesection->fixed_point_series[i][j] = &(gamesection->playarea[tempx][tempy]);
         }
-    }while(!gamesection->autosolve());
+    //}while(!gamesection->autosolve());
     gamesection->init();
     update();
     last_active_unit = 0;
@@ -157,6 +162,7 @@ void GameBody :: paintEvent(QPaintEvent *ev){
     p.setRenderHint(QPainter::Antialiasing,true);
     p.setWindow(0,0,420,420);
     //Draw the grid
+    p.setPen(QColor(Qt::darkYellow));
     for (int i=0;i<=420;i+=420/(gamesection->size)){
         p.drawLine(0,i,420,i);
         p.drawLine(i,0,i,420);
@@ -206,6 +212,7 @@ void GameBody :: paintEvent(QPaintEvent *ev){
 }
 
 void GameBody :: mouseMoveEvent(QMouseEvent *event){
+    Q_INIT_RESOURCE(flowfree_resources);
     if ((last_active_unit!=0)&& event->buttons() == Qt::LeftButton){
         cursor = event->pos();
         if (last_active_unit!=0)
@@ -236,8 +243,7 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
                 else if (gamesection->playarea[cursor_i][cursor_j].succ == 0){
                     last_active_unit->succ = &(gamesection->playarea[cursor_i][cursor_j]);
                     qDebug()<<"Connected!";
-                    player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\connected.mp3"));
-                    player->play();
+                    QSound::play(":/sound/sound/connected.wav");
                     last_active_unit = 0;
                     //update();
                 }
@@ -260,8 +266,7 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
                 int tempcolor = gamesection->playarea[cursor_i][cursor_j].color;
                 if (gamesection->if_color_connected(tempcolor)){
                     qDebug()<<"Broken!";
-                    player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\broken.mp3"));
-                    player->play();
+                    QSound::play(":/sound/sound/broken.wav");
                 }
                 Unit* p = gamesection->fixed_point_series[tempcolor][0];
                 while (p->succ!=0 && p->succ!=&(gamesection->playarea[cursor_i][cursor_j]))
@@ -295,6 +300,7 @@ void GameBody :: mouseMoveEvent(QMouseEvent *event){
 }
 
 void GameBody :: mousePressEvent(QMouseEvent *event){
+    Q_INIT_RESOURCE(flowfree_resources);
     int inteval = (this->frameSize().height())/(gamesection->size);
     qDebug()<<this->frameSize();
     if (event->button() == Qt::LeftButton){
@@ -316,8 +322,7 @@ void GameBody :: mousePressEvent(QMouseEvent *event){
         else{
             if (gamesection->if_color_connected(gamesection->playarea[cursor_i][cursor_j].color)){
                 qDebug()<<"Broken!";
-                player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\broken.mp3"));
-                player->play();
+                QSound::play(":/sound/sound/broken.wav");
             }
             last_active_unit = &(gamesection->playarea[cursor_i][cursor_j]);
             if (last_active_unit->if_fixed){
@@ -341,13 +346,13 @@ void GameBody :: mousePressEvent(QMouseEvent *event){
 }
 
 void GameBody :: mouseReleaseEvent(QMouseEvent *event){
+    Q_INIT_RESOURCE(flowfree_resources);
     last_active_unit = 0;
     show_cursor =false;
     update();
     if (gamesection->if_all_color_connected()){
         qDebug()<<"PASS!";
-        player->setMedia(QUrl::fromLocalFile("C:\\Users\\Chuizheng\\Documents\\QT_Projects\\FlowFree\\pass.mp3"));
-        player->play();
+        QSound::play(":/sound/sound/pass.wav");
         QMessageBox pass_note(QMessageBox::Information,"FlowFree","You have passed this section!",QMessageBox::Yes|QMessageBox::Default);
         pass_note.show();
         if (pass_note.exec() == QMessageBox::Yes){

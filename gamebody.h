@@ -7,7 +7,7 @@
 #include <QString>
 #include <QTextStream>
 #include <QWidget>
-#include <QMediaPlayer>
+#include <QSound>
 #include "gamesection.h"
 
 //Responsible for loading and drawing
@@ -21,7 +21,6 @@ private:
     Unit* last_active_unit;
     QPoint cursor;
     bool show_cursor;
-    QMediaPlayer *player;
     int random_size;
     int random_colortype;
 
@@ -51,7 +50,7 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 signals:
-    void currentSectionChanged(int);
+    void currentSectionChanged(QString);
 };
 
 #endif // GAMEBODY

@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/sections">
+        <file>sections/0.txt</file>
+        <file>sections/1.txt</file>
+        <file>sections/2.txt</file>
+        <file>sections/3.txt</file>
+        <file>sections/4.txt</file>
+        <file>sections/5.txt</file>
+    </qresource>
+    <qresource prefix="/sound">
+        <file>sound/broken.wav</file>
+        <file>sound/connected.wav</file>
+        <file>sound/pass.wav</file>
+    </qresource>
+    <qresource prefix="/picture">
+        <file>picture/Diamondplate-windmachines-png-black-diamond-png.png</file>
+        <file>picture/untitled_drawing_by_crystal_wise-d7zcdd0.png</file>
+        <file>picture/BQJ4hwu.png</file>
+    </qresource>
+</RCC>
