@@ -2,7 +2,6 @@
 #define GAMEBODY
 
 #include <QObject>
-#include <QDir>
 #include <QFile>
 #include <QString>
 #include <QTextStream>
@@ -17,7 +16,6 @@ private:
     GameSection* gamesection;
     int max_sec_num;
     int current_sec;
-    QDir sec_source;
     Unit* last_active_unit;
     QPoint cursor;
     bool show_cursor;
@@ -34,7 +32,7 @@ public slots:
     void restart_sec();
     void autosolve_sec();
     void load_section(int);
-    void set_value(int max, QDir source);
+    void set_value(int max);
     void init(){
         current_sec = 0;
         gamesection = 0;

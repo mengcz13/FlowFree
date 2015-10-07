@@ -10,7 +10,7 @@
 GameBody :: GameBody(QWidget *parent):
     QWidget(parent)
 {
-    set_value(6);
+    set_value(6,QDir::current());
     setMouseTracking(false);
 }
 
@@ -98,10 +98,11 @@ void GameBody :: load_section(int sec = 0){
     update();
 }
 
-void GameBody :: set_value(int max){
+void GameBody :: set_value(int max, QDir source){
     gamesection = 0;
     max_sec_num = max;
     current_sec = 0;
+    sec_source = source;
     gamesection = 0;
     last_active_unit = 0;
     cursor = QPoint(0,0);

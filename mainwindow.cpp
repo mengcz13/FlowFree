@@ -34,7 +34,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->random_radioButton,SIGNAL(clicked()),ui->colortype_spinBox_2,SLOT(show()));
     connect(ui->random_radioButton,SIGNAL(clicked()),ui->size_label,SLOT(show()));
     connect(ui->random_radioButton,SIGNAL(clicked()),ui->colortype_label_2,SLOT(show()));
-    //connect(ui->random_radioButton,SIGNAL(clicked()),ui->gamebody,SLOT(randomize()));
 
     connect(ui->RandomButton,SIGNAL(clicked(bool)),ui->gamebody,SLOT(randomize()));
     connect(ui->size_spinBox,SIGNAL(valueChanged(int)),ui->gamebody,SLOT(set_size(int)));
